@@ -10,8 +10,26 @@ import {
   Film,
   Sparkles
 } from 'lucide-react';
+import Giscus from '@giscus/react';
 
 export default function App() {
+  const openApp = (packageName: string) => {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (!isMobile) {
+      alert("모바일 환경에서만 지원됩니다.");
+      return;
+    }
+
+    const start = Date.now();
+    window.location.href = `intent://#Intent;scheme=https;package=${packageName};end`;
+    
+    setTimeout(() => {
+      if (Date.now() - start < 2000) {
+        alert("앱을 찾을 수 없습니다.");
+      }
+    }, 1500);
+  };
+
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-300 font-sans selection:bg-yellow-500 selection:text-black">
       {/* Header / Hero Section */}
@@ -122,16 +140,21 @@ export default function App() {
                 <video src="/mining_satoshi.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100"></video>
                 <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:opacity-0 pointer-events-none"></div>
               </div>
-              <div className="p-8 flex-1">
+              <div className="p-8 flex-1 flex flex-col">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="p-3 bg-neutral-800 rounded-lg text-neutral-300">
                     <Pickaxe size={24} />
                   </div>
                   <h3 className="font-bold text-2xl text-white">Mining Satoshi</h3>
                 </div>
-                <p className="text-neutral-400 leading-relaxed">
+                <p className="text-neutral-400 leading-relaxed mb-6">
                   일상의 참여가 채굴이 됩니다. 다양한 미션과 활동을 통해 SATOSHI를 리워드로 받을 수 있는 앱.
                 </p>
+                <div className="mt-auto">
+                  <a href="https://www.miningsatoshi.com" target="_blank" rel="noopener noreferrer" className="block w-full text-center px-6 py-3 bg-yellow-500 text-black font-bold rounded-xl hover:bg-yellow-400 transition-colors shadow-lg shadow-yellow-500/20">
+                    사이트 방문하기
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -147,8 +170,13 @@ export default function App() {
                 <p className="text-neutral-400 leading-relaxed mb-6">
                   가장 빠르고 안전하게. 생태계 내 모든 자산을 직관적으로 관리할 수 있는 SATOSHI 모바일 전용 지갑.
                 </p>
-                <div className="mt-auto rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950">
-                  <img src="/Satoshi_Wallet.png" alt="Satoshi Wallet" className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500" />
+                <div className="mt-auto flex flex-col gap-4">
+                  <div className="rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950">
+                    <img src="/Satoshi_Wallet.png" alt="Satoshi Wallet" className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500" />
+                  </div>
+                  <button onClick={() => openApp('com.scp.wallet')} className="block w-full text-center px-6 py-3 bg-yellow-500 text-black font-bold rounded-xl hover:bg-yellow-400 transition-colors shadow-lg shadow-yellow-500/20">
+                    앱 실행하기
+                  </button>
                 </div>
               </div>
             </div>
@@ -159,16 +187,21 @@ export default function App() {
                 <video src="/satoshi_faucet.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100"></video>
                 <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:opacity-0 pointer-events-none"></div>
               </div>
-              <div className="p-8 flex-1">
+              <div className="p-8 flex-1 flex flex-col">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="p-3 bg-blue-900/30 rounded-lg text-blue-400">
                     <Droplets size={24} />
                   </div>
                   <h3 className="font-bold text-2xl text-white">Faucet Satoshi</h3>
                 </div>
-                <p className="text-neutral-400 leading-relaxed">
-                  누구나 쉽게 시작하세요. 크립토 초보자와 신규 유저 생태계 진입을 위한 무상 SATOSHI 배급소.
+                <p className="text-neutral-400 leading-relaxed mb-6">
+                  누구나 쉽게 시작하세요. 크립토 초보자와 신규 유저 생태계 진 입을 위한 무상 SATOSHI 배급소.
                 </p>
+                <div className="mt-auto">
+                  <a href="https://faucet.miningsatoshi.com" target="_blank" rel="noopener noreferrer" className="block w-full text-center px-6 py-3 bg-neutral-800 text-neutral-400 font-bold rounded-xl hover:bg-neutral-700 transition-colors border border-neutral-700">
+                    사이트 방문하기 (준비중)
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -184,8 +217,13 @@ export default function App() {
                 <p className="text-neutral-400 leading-relaxed mb-6">
                   웃음도 공유하고 토큰도 얻고! 유튜브, 릴스 등의 꿀잼 영상을 공유하고 평가하는 탈중앙화 커뮤니티 앱.
                 </p>
-                <div className="mt-auto rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950">
-                  <img src="/scrap_movie.png" alt="Scrap Funny Movie" className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500" />
+                <div className="mt-auto flex flex-col gap-4">
+                  <div className="rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950">
+                    <img src="/scrap_movie.png" alt="Scrap Funny Movie" className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500" />
+                  </div>
+                  <button onClick={() => openApp('com.scp.funmovie')} className="block w-full text-center px-6 py-3 bg-yellow-500 text-black font-bold rounded-xl hover:bg-yellow-400 transition-colors shadow-lg shadow-yellow-500/20">
+                    앱 실행하기
+                  </button>
                 </div>
               </div>
             </div>
@@ -196,16 +234,21 @@ export default function App() {
                 <video src="/dating_satoshi.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100"></video>
                 <div className="absolute inset-0 bg-black/20 transition-opacity group-hover:opacity-0 pointer-events-none"></div>
               </div>
-              <div className="p-8 flex-1">
+              <div className="p-8 flex-1 flex flex-col">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="p-3 bg-neutral-800 rounded-lg text-neutral-300">
                     <MessageCircleHeart size={24} />
                   </div>
                   <h3 className="font-bold text-2xl text-white">Dating App <span className="text-sm font-medium text-yellow-400 bg-yellow-500/10 px-2 py-1 rounded-md ml-2 border border-yellow-500/20">on MBC</span></h3>
                 </div>
-                <p className="text-neutral-400 leading-relaxed">
+                <p className="text-neutral-400 leading-relaxed mb-6">
                   MBC 네트워크 기반의 안전하고 즐거운 데이팅 채팅 앱. 토큰 이코노미를 결합하여 프리미엄 기능 제공.
                 </p>
+                <div className="mt-auto">
+                  <button onClick={() => openApp('com.scp.dating')} className="block w-full text-center px-6 py-3 bg-yellow-500 text-black font-bold rounded-xl hover:bg-yellow-400 transition-colors shadow-lg shadow-yellow-500/20">
+                    앱 실행하기
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -234,6 +277,61 @@ export default function App() {
         </div>
       </section>
 
+      {/* Referral System Section */}
+      <section className="bg-gradient-to-b from-neutral-950 to-neutral-900 py-24 px-4 sm:px-6 lg:px-8 border-t border-neutral-900">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-sm font-bold text-yellow-500 tracking-wide uppercase mb-3">Referral Program</h2>
+            <h3 className="text-3xl md:text-4xl font-extrabold text-white">강력한 3단계 레퍼럴 시스템</h3>
+            <p className="mt-4 text-lg text-neutral-400 max-w-2xl mx-auto">
+              친구를 초대하고 함께 성장하세요. 추천의 깊이에 따라 가중치가 다른 풍성한 리워드가 지급됩니다.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-8 text-center relative overflow-hidden group hover:border-yellow-500/50 transition-colors">
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-yellow-600 to-yellow-400 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+              <div className="w-16 h-16 bg-neutral-900 rounded-full flex items-center justify-center mx-auto mb-6 text-yellow-500 text-2xl font-bold border border-neutral-800">1</div>
+              <h4 className="text-xl font-bold text-white mb-3">직접 추천 (1단계)</h4>
+              <p className="text-neutral-400 text-sm">
+                내가 직접 초대한 친구의 활동에 대해 <span className="text-yellow-500 font-bold">가장 높은 가중치</span>로 보상을 받습니다.
+              </p>
+            </div>
+            
+            <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-8 text-center relative overflow-hidden group hover:border-yellow-500/50 transition-colors">
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-yellow-600 to-yellow-400 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+              <div className="w-16 h-16 bg-neutral-900 rounded-full flex items-center justify-center mx-auto mb-6 text-yellow-400 text-2xl font-bold border border-neutral-800">2</div>
+              <h4 className="text-xl font-bold text-white mb-3">간접 추천 (2단계)</h4>
+              <p className="text-neutral-400 text-sm">
+                내 친구가 초대한 새로운 친구의 활동에 대해서도 <span className="text-yellow-400 font-bold">중간 가중치</span>의 보상이 이어집니다.
+              </p>
+            </div>
+            
+            <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-8 text-center relative overflow-hidden group hover:border-yellow-500/50 transition-colors">
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-yellow-600 to-yellow-400 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+              <div className="w-16 h-16 bg-neutral-900 rounded-full flex items-center justify-center mx-auto mb-6 text-yellow-300 text-2xl font-bold border border-neutral-800">3</div>
+              <h4 className="text-xl font-bold text-white mb-3">확장 추천 (3단계)</h4>
+              <p className="text-neutral-400 text-sm">
+                생태계 확장의 기여도를 인정받아 3단계 친구의 활동까지 <span className="text-yellow-300 font-bold">기본 가중치</span> 보상을 받습니다.
+              </p>
+            </div>
+          </div>
+          
+          <div className="mt-12 bg-neutral-900 border border-neutral-800 rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-1">
+              <h4 className="text-2xl font-bold text-white mb-4">함께할수록 커지는 혜택</h4>
+              <p className="text-neutral-400 leading-relaxed mb-4">
+                <strong>Mining Satoshi</strong> 채굴 시스템에서 나만의 추천 코드를 발급받고 배포하세요! 링크를 통해 가입한 추천인과 함께라면, <strong>SCP의 다양한 앱 (Satoshi Wallet, Scrap Funny Movie 등)</strong>에서 활동할 때마다 모두에게 더 많은 시너지 리워드가 지급됩니다.
+              </p>
+              <ul className="text-neutral-300 space-y-2 text-sm">
+                <li className="flex items-center gap-2"><span className="text-green-500">✓</span> 가입 즉시 추천인과 가입자 모두에게 시작 보너스 지급</li>
+                <li className="flex items-center gap-2"><span className="text-green-500">✓</span> 채굴 및 앱 활동 시 3단계 레퍼럴 트리 구조로 리워드 분배</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Community Board Section (Giscus 적용 위치) */}
       <section id="board" className="max-w-4xl mx-auto py-24 px-4 sm:px-6 scroll-mt-10">
         <div className="bg-neutral-900 p-8 md:p-12 rounded-3xl shadow-xl border border-neutral-800">
@@ -248,27 +346,21 @@ export default function App() {
             </p>
           </div>
           
-          <div className="bg-neutral-950 rounded-xl p-6 border border-neutral-800 min-h-[300px] flex items-center justify-center relative overflow-hidden">
-             {/* Note to User: Giscus Script goes directly in HTML or injected via React useEffect,
-                 but since we're providing the React component, it's best to inform them. */}
-            <div className="text-center z-10 p-6 bg-neutral-900 rounded-lg shadow-sm w-full max-w-lg border border-neutral-800">
-                <h4 className="font-bold text-white mb-2">Giscus 게시판 연동 가이드</h4>
-                <p className="text-sm text-neutral-400 mb-4">
-                   GitHub Repository의 Discussions 기능을 활성화하고,<br/>
-                   <a href="https://giscus.app/ko" target="_blank" rel="noreferrer" className="text-yellow-500 hover:text-yellow-400 hover:underline">Giscus 공식 홈페이지</a>에서 발급받은 스크립트를 적용하세요.
-                </p>
-                <code className="block bg-neutral-950 border border-neutral-800 text-green-400 text-xs p-4 rounded text-left overflow-x-auto whitespace-pre">
-{`<script src="https://giscus.app/client.js"
-        data-repo="[YOUR_GITHUB_ACOUNT]/[YOUR_REPO]"
-        data-repo-id="[YOUR_REPO_ID]"
-        data-category="Ideas"
-        ...
-        data-theme="dark"
-        crossorigin="anonymous"
-        async>
-</script>`}
-                </code>
-            </div>
+          <div className="bg-neutral-950 rounded-xl p-6 border border-neutral-800 min-h-[300px] relative overflow-hidden">
+             <Giscus
+                id="comments"
+                repo="gallantsystem/scp"
+                repoId="R_kgDOSTN6fg"
+                category="Ideas"
+                categoryId="DIC_kwDOSTN6fs4C8Qpx"
+                mapping="pathname"
+                strict="0"
+                reactionsEnabled="1"
+                emitMetadata="0"
+                inputPosition="bottom"
+                theme="purple_dark"
+                lang="ko"
+              />
           </div>
         </div>
       </section>
