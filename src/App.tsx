@@ -9,7 +9,8 @@ import {
   MessageCircleHeart,
   Film,
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  ExternalLink
 } from 'lucide-react';
 import Giscus from '@giscus/react';
 import { useTranslation } from 'react-i18next';
@@ -95,7 +96,7 @@ export default function App() {
           <div className="flex-1 text-center md:text-left flex flex-col items-center md:items-start">
             <div className="inline-flex items-center justify-center p-2 bg-yellow-500/10 rounded-2xl mb-8 backdrop-blur-sm border border-yellow-500/20 shadow-xl">
                <img src="/satoshi-icon.png" alt="logo" className="h-10 w-10 object-contain drop-shadow-md rounded-xl" onError={(e) => e.currentTarget.style.display = 'none'} />
-               <span className="text-xl font-bold ml-3 mr-4 tracking-wider text-yellow-500">SATOSHI</span>
+               <span className="text-xl font-bold ml-3 mr-4 tracking-wider text-yellow-500">SATOSHIMEME</span>
             </div>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 tracking-tight drop-shadow-md leading-tight text-white">
               {t('hero-title-1')}<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">{t('hero-title-2')}</span><br/>{t('hero-title-3')}
@@ -247,7 +248,7 @@ export default function App() {
                   <div className="p-3 bg-blue-900/30 rounded-lg text-blue-400">
                     <Droplets size={24} />
                   </div>
-                  <h3 className="font-bold text-2xl text-white">Faucet Satoshi</h3>
+                  <h3 className="font-bold text-2xl text-white">Faucet SATOSHIMEME</h3>
                 </div>
                 <p className="text-neutral-400 leading-relaxed mb-6">
                   {t('app-faucet-desc')}
@@ -383,6 +384,39 @@ export default function App() {
                 <li className="flex items-center gap-2"><span className="text-green-500">✓</span> {t('ref-benefit-list-2')}</li>
               </ul>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Partners & Communities Links Section */}
+      <section className="bg-neutral-950 py-12 px-4 sm:px-6 lg:px-8 border-t border-neutral-900">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* MicroBitcoin */}
+            <a href="https://www.microbitcoin.org" target="_blank" rel="noopener noreferrer" className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden hover:border-yellow-500/50 transition-all group shadow-sm hover:shadow-[0_4px_20px_rgba(234,179,8,0.1)] flex flex-col sm:flex-row">
+              <div className="sm:w-48 aspect-video sm:aspect-auto bg-neutral-950 flex items-center justify-center border-b sm:border-b-0 sm:border-r border-neutral-800 relative overflow-hidden group-hover:opacity-90 transition-opacity">
+                <img src="/microbitcoin.png" alt="MicroBitcoin" className="w-full h-full object-cover" />
+              </div>
+              <div className="p-6 flex-1 flex flex-col justify-center relative bg-gradient-to-br from-neutral-900 to-neutral-950">
+                <ExternalLink size={20} className="absolute top-6 right-6 text-neutral-600 group-hover:text-yellow-500 transition-colors" />
+                <h4 className="text-xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors">MicroBitcoin</h4>
+                <p className="text-neutral-400 text-sm mb-4 line-clamp-2">A peer-to-peer payment platform that allows everyone to make fast and secure transactions.</p>
+                <div className="text-yellow-500/80 text-sm font-medium mt-auto group-hover:underline break-all">www.microbitcoin.org</div>
+              </div>
+            </a>
+
+            {/* Satoshi Memes */}
+            <a href="https://www.satoshimemes.com" target="_blank" rel="noopener noreferrer" className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden hover:border-yellow-500/50 transition-all group shadow-sm hover:shadow-[0_4px_20px_rgba(234,179,8,0.1)] flex flex-col sm:flex-row">
+              <div className="sm:w-48 aspect-video sm:aspect-auto bg-neutral-950 flex items-center justify-center border-b sm:border-b-0 sm:border-r border-neutral-800 relative overflow-hidden group-hover:opacity-90 transition-opacity">
+                <img src="/satoshimemes.png" alt="Satoshi Memes" className="w-full h-full object-cover object-top" />
+              </div>
+              <div className="p-6 flex-1 flex flex-col justify-center relative bg-gradient-to-br from-neutral-900 to-neutral-950">
+                <ExternalLink size={20} className="absolute top-6 right-6 text-neutral-600 group-hover:text-yellow-500 transition-colors" />
+                <h4 className="text-xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors">Satoshi Memes</h4>
+                <p className="text-neutral-400 text-sm mb-4 line-clamp-2">The official community platform for Satoshi Meme token holders. Join the discussion and ecosystem.</p>
+                <div className="text-yellow-500/80 text-sm font-medium mt-auto group-hover:underline break-all">www.satoshimemes.com</div>
+              </div>
+            </a>
           </div>
         </div>
       </section>
