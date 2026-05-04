@@ -230,7 +230,7 @@ export default function App() {
                   <div className="rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950">
                     <img src="/Satoshi_Wallet.png" alt="Satoshi Wallet" className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500" />
                   </div>
-                  <button onClick={() => openApp('com.scp.wallet')} className="block w-full text-center px-6 py-3 bg-yellow-500 text-black font-bold rounded-xl hover:bg-yellow-400 transition-colors shadow-lg shadow-yellow-500/20">
+                  <button onClick={() => openApp('com.scp.wallet')} className="block w-full text-center px-6 py-3 bg-neutral-800 text-neutral-400 font-bold rounded-xl hover:bg-neutral-700 transition-colors border border-neutral-700">
                     {t('btn-run-app')}
                   </button>
                 </div>
@@ -277,7 +277,7 @@ export default function App() {
                   <div className="rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950">
                     <img src="/scrap_movie.png" alt="Scrap Funny Movie" className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500" />
                   </div>
-                  <button onClick={() => openApp('com.scp.funmovie')} className="block w-full text-center px-6 py-3 bg-yellow-500 text-black font-bold rounded-xl hover:bg-yellow-400 transition-colors shadow-lg shadow-yellow-500/20">
+                  <button onClick={() => openApp('com.scp.funmovie')} className="block w-full text-center px-6 py-3 bg-neutral-800 text-neutral-400 font-bold rounded-xl hover:bg-neutral-700 transition-colors border border-neutral-700">
                     {t('btn-run-app')}
                   </button>
                 </div>
@@ -301,7 +301,7 @@ export default function App() {
                   {t('app-dating-desc')}
                 </p>
                 <div className="mt-auto">
-                  <button onClick={() => openApp('com.scp.dating')} className="block w-full text-center px-6 py-3 bg-yellow-500 text-black font-bold rounded-xl hover:bg-yellow-400 transition-colors shadow-lg shadow-yellow-500/20">
+                  <button onClick={() => openApp('com.scp.dating')} className="block w-full text-center px-6 py-3 bg-neutral-800 text-neutral-400 font-bold rounded-xl hover:bg-neutral-700 transition-colors border border-neutral-700">
                     {t('btn-run-app')}
                   </button>
                 </div>
