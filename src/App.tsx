@@ -10,11 +10,190 @@ import {
   Film,
   Sparkles,
   ChevronDown,
-  ExternalLink
+  ExternalLink,
+  Trash2,
+  Lock,
+  Unlock,
+  MessageCircle,
+  Send,
+  Youtube
 } from 'lucide-react';
 import Giscus from '@giscus/react';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
+import { auth, db } from './firebase';
+import { collection, addDoc, getDocs, onSnapshot, query, orderBy, serverTimestamp, doc, getDocFromServer, deleteDoc } from 'firebase/firestore';
+import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User } from 'firebase/auth';
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: any;
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {},
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+}
+
+// At the top of the file, define the types for comments
+interface Comment {
+  id: string;
+  author: string;
+  content: string;
+  createdAt: string | null;
+}
+
+function AnonymousBoard({ isAdmin }: { isAdmin: boolean }) {
+  const { t } = useTranslation();
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newAuthor, setNewAuthor] = useState('');
+  const [newContent, setNewContent] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('정말 삭제하시겠습니까?')) return;
+    try {
+      await deleteDoc(doc(db, 'ideas', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `ideas/${id}`);
+      alert('삭제 권한이 없거나 오류가 발생했습니다.');
+    }
+  };
+
+  useEffect(() => {
+    // Validate connection to Firestore on boot
+    const testConnection = async () => {
+      try {
+        await getDocFromServer(doc(db, 'test', 'connection'));
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('the client is offline')) {
+          console.error("Please check your Firebase configuration.");
+        }
+      }
+    };
+    testConnection();
+
+    // Set up realtime listener
+    const q = query(collection(db, 'ideas'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedComments = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          author: data.author,
+          content: data.content,
+          createdAt: data.createdAt ? data.createdAt.toDate().toISOString() : null,
+        } as Comment;
+      });
+      setComments(fetchedComments);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'ideas');
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAuthor.trim() || !newContent.trim()) return;
+
+    setIsLoading(true);
+    try {
+      await addDoc(collection(db, 'ideas'), {
+        author: newAuthor,
+        content: newContent,
+        createdAt: serverTimestamp()
+      });
+      setNewAuthor('');
+      setNewContent('');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'ideas');
+      alert('Failed to post idea. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="w-full flex flex-col items-center">
+      <form onSubmit={handleSubmit} className="w-full max-w-3xl bg-neutral-900 border border-neutral-800 rounded-2xl p-4 sm:p-6 mb-8 flex flex-col gap-4 shadow-lg">
+        <input
+          type="text"
+          placeholder={t('board-author-placeholder') || 'Nickname'}
+          className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-lg px-4 py-3 placeholder:text-neutral-500 focus:outline-none focus:border-yellow-500 transition-colors"
+          value={newAuthor}
+          onChange={(e) => setNewAuthor(e.target.value)}
+          maxLength={20}
+          required
+        />
+        <textarea
+          placeholder={t('board-content-placeholder') || 'Leave your brilliant idea here!'}
+          className="w-full bg-neutral-950 border border-neutral-700 text-white rounded-lg px-4 py-3 min-h-[120px] placeholder:text-neutral-500 focus:outline-none focus:border-yellow-500 transition-colors resize-y"
+          value={newContent}
+          onChange={(e) => setNewContent(e.target.value)}
+          required
+        ></textarea>
+        <div className="flex justify-end mt-2">
+          <button
+            type="submit"
+            disabled={isLoading || !newAuthor.trim() || !newContent.trim()}
+            className="px-8 py-3 bg-yellow-500 text-black font-bold rounded-xl hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            {isLoading ? '...' : (t('board-submit') || 'Post Idea')}
+          </button>
+        </div>
+      </form>
+
+      <div className="w-full max-w-3xl flex flex-col gap-6">
+        {comments.map((comment) => (
+          <div key={comment.id} className="relative bg-neutral-900 border border-neutral-800 rounded-2xl p-4 sm:p-6 shadow-sm">
+            <div className="flex justify-between items-center mb-4 border-b border-neutral-800 pb-3 pr-8">
+              <span className="font-bold text-yellow-500 bg-yellow-500/10 px-3 py-1 rounded-full text-sm">
+                @{comment.author}
+              </span>
+              {isAdmin && (
+                <button 
+                  onClick={() => handleDelete(comment.id)} 
+                  className="absolute top-4 right-4 text-neutral-500 hover:text-red-500 transition-colors p-2"
+                  title="삭제"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
+              <span className="text-xs text-neutral-500 font-medium">
+                {comment.createdAt ? new Date(comment.createdAt).toLocaleString() : 'Just now'}
+              </span>
+            </div>
+            <p className="text-neutral-300 leading-relaxed whitespace-pre-wrap">{comment.content}</p>
+          </div>
+        ))}
+        
+        {comments.length === 0 && (
+          <div className="text-center py-12 text-neutral-500">
+            {t('board-empty') || 'No ideas yet. Be the first to share!'}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const LANGUAGES = [
   { code: 'ko', name: '한국어' },
@@ -67,6 +246,32 @@ function LanguageSwitcher() {
 
 export default function App() {
   const { t, i18n } = useTranslation();
+  const [adminUser, setAdminUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && user.email === 'gallantsystem99@gmail.com') {
+        setAdminUser(user);
+      } else {
+        setAdminUser(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleAdminLogin = async () => {
+    if (adminUser) {
+      await signOut(auth);
+    } else {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Admin login failed", error);
+      }
+    }
+  };
 
   const openApp = (packageName: string) => {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -338,7 +543,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-sm font-bold text-yellow-500 tracking-wide uppercase mb-3">{t('ref-label')}</h2>
-            <h3 className="text-3xl md:text-4xl font-extrabold text-white">{t('ref-title')}</h3>
+            <h3 className="text-[30px] font-extrabold text-white">{t('ref-title')}</h3>
             <p className="mt-4 text-lg text-neutral-400 max-w-2xl mx-auto">
               {t('ref-desc')}
             </p>
@@ -421,35 +626,86 @@ export default function App() {
         </div>
       </section>
 
+      {/* Community Section */}
+      <section id="community" className="py-24 bg-neutral-950 relative overflow-hidden border-t border-neutral-900 text-center">
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-64 h-64 bg-yellow-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+          <div className="mb-12">
+            <h2 className="text-sm font-bold text-yellow-500 tracking-wide uppercase mb-3">Our Community</h2>
+            <h3 className="text-3xl md:text-5xl font-extrabold text-white mb-4 break-keep">{t('community-title')}</h3>
+            <p className="text-neutral-400 text-lg max-w-2xl mx-auto">{t('community-desc')}</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <a href="https://open.kakao.com/o/gslkLiKb" target="_blank" rel="noreferrer" className="bg-neutral-900 border border-neutral-800 p-6 rounded-2xl flex items-center gap-4 hover:border-yellow-500/50 transition-all group shadow-sm bg-gradient-to-br from-neutral-900 to-neutral-950">
+              <div className="bg-[#FAE100] p-3 rounded-xl text-black group-hover:scale-110 transition-transform">
+                <MessageCircle size={28} />
+              </div>
+              <div className="text-left">
+                <h4 className="font-bold text-lg text-white">{t('community-kakao-1-title')}</h4>
+                <p className="text-sm text-neutral-400">{t('community-kakao-1-desc')}</p>
+              </div>
+            </a>
+            
+            <a href="https://open.kakao.com/o/gI75m9pe" target="_blank" rel="noreferrer" className="bg-neutral-900 border border-neutral-800 p-6 rounded-2xl flex items-center gap-4 hover:border-yellow-500/50 transition-all group shadow-sm bg-gradient-to-br from-neutral-900 to-neutral-950">
+              <div className="bg-[#FAE100] p-3 rounded-xl text-black group-hover:scale-110 transition-transform">
+                <MessageCircle size={28} />
+              </div>
+              <div className="text-left">
+                <h4 className="font-bold text-lg text-white">{t('community-kakao-2-title')}</h4>
+                <p className="text-sm text-neutral-400">{t('community-kakao-2-desc')}</p>
+              </div>
+            </a>
+
+            <a href="https://open.kakao.com/o/gCLfIjCh" target="_blank" rel="noreferrer" className="bg-neutral-900 border border-neutral-800 p-6 rounded-2xl flex items-center gap-4 hover:border-yellow-500/50 transition-all group shadow-sm bg-gradient-to-br from-neutral-900 to-neutral-950">
+              <div className="bg-[#FAE100] p-3 rounded-xl text-black group-hover:scale-110 transition-transform">
+                <MessageCircle size={28} />
+              </div>
+              <div className="text-left">
+                <h4 className="font-bold text-lg text-white">{t('community-kakao-3-title')}</h4>
+                <p className="text-sm text-neutral-400">{t('community-kakao-3-desc')}</p>
+              </div>
+            </a>
+
+            <a href="https://t.me/+887Sr-VpLy4yNmZl" target="_blank" rel="noreferrer" className="bg-neutral-900 border border-neutral-800 p-6 rounded-2xl flex items-center gap-4 hover:border-yellow-500/50 transition-all group shadow-sm bg-gradient-to-br from-neutral-900 to-neutral-950">
+              <div className="bg-[#24A1DE] p-3 rounded-xl text-white group-hover:scale-110 transition-transform">
+                <Send size={28} />
+              </div>
+              <div className="text-left">
+                <h4 className="font-bold text-lg text-white">{t('community-telegram-title')}</h4>
+                <p className="text-sm text-neutral-400">{t('community-telegram-desc')}</p>
+              </div>
+            </a>
+
+            <a href="https://www.youtube.com/@MicroBitcoin" target="_blank" rel="noreferrer" className="bg-neutral-900 border border-neutral-800 p-6 rounded-2xl flex items-center gap-4 hover:border-yellow-500/50 transition-all group shadow-sm bg-gradient-to-br from-neutral-900 to-neutral-950">
+              <div className="bg-[#FF0000] p-3 rounded-xl text-white group-hover:scale-110 transition-transform">
+                <Youtube size={28} />
+              </div>
+              <div className="text-left">
+                <h4 className="font-bold text-lg text-white">{t('community-youtube-title')}</h4>
+                <p className="text-sm text-neutral-400">{t('community-youtube-desc')}</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Community Board Section (Giscus 적용 위치) */}
       <section id="board" className="max-w-4xl mx-auto py-24 px-4 sm:px-6 scroll-mt-10">
-        <div className="bg-neutral-900 p-8 md:p-12 rounded-3xl shadow-xl border border-neutral-800">
+        <div className="bg-neutral-900 px-4 py-8 sm:p-12 rounded-3xl shadow-xl border border-neutral-800">
           <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center p-3 bg-yellow-500/10 rounded-full text-yellow-500 mb-4">
               <MessageCircleHeart size={32} />
             </div>
-            <h2 className="text-3xl font-extrabold text-white mb-4">{t('board-title')}</h2>
-            <p className="text-neutral-400 text-lg">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-4 tracking-tight">{t('board-title')}</h2>
+            <p className="text-neutral-400 text-base sm:text-lg">
               {t('board-desc-1')}<br/>
               {t('board-desc-2')}
             </p>
           </div>
           
-          <div className="bg-neutral-950 rounded-xl p-6 border border-neutral-800 min-h-[300px] relative overflow-hidden">
-             <Giscus
-                id="comments"
-                repo="gallantsystem/scp"
-                repoId="R_kgDOSTN6fg"
-                category="Ideas"
-                categoryId="DIC_kwDOSTN6fs4C8Qpx"
-                mapping="pathname"
-                strict="0"
-                reactionsEnabled="1"
-                emitMetadata="0"
-                inputPosition="bottom"
-                theme="purple_dark"
-                lang="ko"
-              />
+          <div className="min-h-[300px] relative">
+             <AnonymousBoard isAdmin={!!adminUser} />
           </div>
         </div>
       </section>
@@ -461,7 +717,16 @@ export default function App() {
           <p className="text-neutral-500 mb-6">Community Project</p>
           <div className="w-16 h-1 bg-gradient-to-r from-yellow-600 to-yellow-400 mx-auto mb-6 rounded-full"></div>
           <p className="text-neutral-600">&copy; {new Date().getFullYear()} Satoshi Community Project. All rights reserved.</p>
-          <p className="text-neutral-700 text-sm mt-2">Powered by Satoshimemes.com Community</p>
+          <p className="text-neutral-700 text-sm mt-2 flex justify-center items-center gap-2">
+            Powered by Satoshimemes.com Community
+            <button 
+              onClick={handleAdminLogin} 
+              className="text-neutral-800 hover:text-neutral-500 transition-colors hidden sm:inline-block ml-2"
+              title={adminUser ? "관리자 로그아웃" : "관리자 로그인"}
+            >
+              {adminUser ? <Unlock size={14} /> : <Lock size={14} />}
+            </button>
+          </p>
         </div>
       </footer>
     </div>

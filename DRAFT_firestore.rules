@@ -1,0 +1,41 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitive Definition
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    // Entity Validator: Idea
+    function isValidIdea(data) {
+      return data.keys().hasAll(['author', 'content', 'createdAt']) &&
+             data.keys().size() == 3 &&
+             data.author is string && data.author.size() > 0 && data.author.size() <= 50 &&
+             data.content is string && data.content.size() > 0 && data.content.size() <= 5000 &&
+             data.createdAt == request.time;
+    }
+
+    match /ideas/{ideaId} {
+      // Allow read on single item
+      allow get: if isValidId(ideaId);
+      
+      // Allow list (for queries) -- Anyone can list since it's a public anonymous board
+      allow list: if true;
+      
+      // Allow create -- Anyone can create, strictly validated via isValidIdea
+      allow create: if isValidId(ideaId) && isValidIdea(incoming());
+      
+      // Allow update/delete -- Not allowed for an anonymous board (append only)
+      allow update, delete: if false;
+    }
+  }
+}

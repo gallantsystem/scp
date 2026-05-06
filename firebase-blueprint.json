@@ -1,0 +1,31 @@
+{
+  "entities": {
+    "Idea": {
+      "title": "Idea",
+      "description": "An anonymously posted idea",
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "string",
+          "description": "Nickname of the poster"
+        },
+        "content": {
+          "type": "string",
+          "description": "Content of the idea"
+        },
+        "createdAt": {
+          "type": "timestamp"
+        }
+      },
+      "required": ["author", "content", "createdAt"]
+    }
+  },
+  "firestore": {
+    "ideas/{ideaId}": {
+      "schema": {
+        "$ref": "#/entities/Idea"
+      },
+      "description": "Stores anonymous ideas"
+    }
+  }
+}
